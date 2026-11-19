@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bó hoa tặng anh - 19/11</title>
+    <style>
+        :root {
+            --primary-blue: #2b6cb0;
+            --text-color: #2d3748;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e2e8f0 0%, #ebf8ff 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Nút điều khiển bật/tắt nhạc góc trên bên phải */
+        .music-toggle {
+            position: fixed;
+            top: 18px;
+            right: 18px;
+            z-index: 200;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1.5px solid #f472b6;
+            color: #be185d;
+            border-radius: 50px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(219, 39, 119, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .music-toggle.visible {
+            display: flex;
+        }
+
+        .music-toggle.dark-mode {
+            background: rgba(30, 20, 36, 0.75);
+            border-color: rgba(255, 117, 143, 0.5);
+            color: #ffe4e6;
+        }
+
+        .music-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            transition: opacity 0.8s ease;
+        }
+
+        .bouquet-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: -5px;
+            z-index: 2;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 10px rgba(255, 255, 255, 0.9);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .bouquet-wrapper {
+            width: 350px;
+            height: 390px;
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .envelope-btn {
+            margin-top: -65px;
+            z-index: 10;
+            background: linear-gradient(135deg, #fff0f6 0%, #ffe4e6 100%);
+            border: 2px solid #f472b6;
+            border-radius: 12px;
+            padding: 10px 20px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(219, 39, 119, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+            animation: pulsePinkBtn 2s infinite;
+        }
+
+        .envelope-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            border-color: #db2777;
+            background: linear-gradient(135deg, #ffe4e6 0%, #fbcfe8 100%);
+            box-shadow: 0 14px 30px rgba(219, 39, 119, 0.38);
+        }
+
+        .envelope-icon { font-size: 1.5rem; line-height: 1; }
+        .envelope-text { font-weight: 700; color: #be185d; font-size: 0.85rem; }
+
+        .letter-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 50;
+        }
+
+        .letter-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .letter-paper {
+            background: #fffdf9;
+            width: 100%;
+            max-width: 460px;
+            border-radius: 16px;
+            padding: 32px 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            border: 1px solid #fbcfe8;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+        }
+
+        .letter-overlay.active .letter-paper {
+            transform: translateY(0);
+        }
+
+        .letter-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #be185d;
+            margin-bottom: 16px;
+            border-bottom: 1px dashed #f9a8d4;
+            padding-bottom: 10px;
+        }
+
+        .letter-content {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: #2d3748;
+            min-height: 220px;
+            white-space: pre-line;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background-color: #db2777;
+            vertical-align: middle;
+            animation: blink 0.8s infinite;
+        }
+
+        .next-step-box {
+            margin-top: 20px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .next-step-box.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #f43f5e, #ec4899);
+            color: white;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .heart-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 52% 45%, #2b1525 0%, #1c1424 45%, #121626 100%);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.2s ease;
+        }
+
+        .heart-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #galaxyCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pulsePinkBtn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.55); }
+            70% { box-shadow: 0 0 0 12px rgba(244, 114, 182, 0); }
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- FILE NHẠC NỀN (Đặt file music.mp3 cùng thư mục với index.html) -->
+<audio id="bgMusic" loop preload="auto">
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- NÚT BẬT/TẮT NHẠC -->
+<button class="music-toggle" id="musicToggle" onclick="toggleMusic()">
+    <span id="musicIcon">🎵</span>
+    <span id="musicLabel">Đang phát</span>
+</button>
+
+<!-- MÀN HÌNH 1: BÓ HOA & BỨC THƯ HỒNG -->
+<div class="container" id="mainContainer">
+    <div class="bouquet-title">Bó hoa tặng anh</div>
+
+    <div class="bouquet-wrapper">
+        <svg viewBox="0 0 340 400" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="wrapBack" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#bfdbfe"/>
+                    <stop offset="50%" stop-color="#93c5fd"/>
+                    <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+                <linearGradient id="wrapFront" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="40%" stop-color="#f1f5f9"/>
+                    <stop offset="100%" stop-color="#cbd5e1"/>
+                </linearGradient>
+                <linearGradient id="blueTulip" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#93c5fd"/>
+                    <stop offset="30%" stop-color="#3b82f6"/>
+                    <stop offset="100%" stop-color="#1d4ed8"/>
+                </linearGradient>
+                <linearGradient id="whiteTulip" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="60%" stop-color="#f8fafc"/>
+                    <stop offset="100%" stop-color="#cbd5e1"/>
+                </linearGradient>
+                <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                    <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.12"/>
+                </filter>
+            </defs>
+
+            <path d="M170,360 L75,150 Q170,60 265,150 Z" fill="url(#wrapBack)" filter="url(#shadow)"/>
+            <path d="M75,150 Q25,200 65,240 L170,360" fill="#93c5fd" opacity="0.6"/>
+            <path d="M265,150 Q315,200 275,240 L170,360" fill="#93c5fd" opacity="0.6"/>
+
+            <g stroke="#15803d" stroke-width="4.5" stroke-linecap="round" fill="none">
+                <path d="M170,340 Q110,210 100,140"/>
+                <path d="M170,340 Q130,220 120,120"/>
+                <path d="M170,340 Q155,200 145,95"/>
+                <path d="M170,340 Q170,200 170,90"/>
+                <path d="M170,340 Q185,200 195,100"/>
+                <path d="M170,340 Q210,220 220,125"/>
+                <path d="M170,340 Q230,210 240,145"/>
+            </g>
+
+            <g fill="#166534" filter="url(#shadow)">
+                <path d="M115,230 Q60,195 65,155 Q100,180 135,215 Z"/>
+                <path d="M225,230 Q280,195 275,155 Q240,180 205,215 Z"/>
+                <path d="M140,215 Q100,140 110,120 Q130,150 150,200 Z" fill="#15803d"/>
+                <path d="M200,215 Q240,140 230,120 Q210,150 190,200 Z" fill="#15803d"/>
+                <path d="M170,240 Q145,170 150,150 Q165,175 175,220 Z" fill="#16a34a"/>
+                <path d="M170,240 Q195,170 190,150 Q175,175 165,220 Z" fill="#16a34a"/>
+            </g>
+
+            <g transform="translate(170, 75)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#blueTulip)"/>
+                <path d="M-13,0 C-17,-22 -3,-36 0,-40 C3,-24 1,5 0,10" fill="#2563eb" opacity="0.6"/>
+            </g>
+            <g transform="translate(122, 90) rotate(-10)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#whiteTulip)"/>
+            </g>
+            <g transform="translate(218, 95) rotate(10)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+            <g transform="translate(170, 130)" filter="url(#shadow)">
+                <path d="M-20,0 C-24,-32 -8,-48 0,-52 C8,-48 24,-32 20,0 C16,15 -16,15 -20,0 Z" fill="url(#whiteTulip)"/>
+            </g>
+            <g transform="translate(95, 125) rotate(-22)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+            <g transform="translate(245, 130) rotate(22)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+            <g transform="translate(125, 175) rotate(-12)" filter="url(#shadow)">
+                <path d="M-20,0 C-24,-32 -8,-48 0,-52 C8,-48 24,-32 20,0 C16,15 -16,15 -20,0 Z" fill="url(#whiteTulip)"/>
+            </g>
+            <g transform="translate(170, 195)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-30 -8,-45 0,-48 C8,-45 22,-30 18,0 C15,14 -15,14 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+            <g transform="translate(215, 175) rotate(12)" filter="url(#shadow)">
+                <path d="M-20,0 C-24,-32 -8,-48 0,-52 C8,-48 24,-32 20,0 C16,15 -16,15 -20,0 Z" fill="url(#whiteTulip)"/>
+            </g>
+            <g transform="translate(85, 185) rotate(-28)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-28 -8,-42 0,-45 C8,-42 22,-28 18,0 C15,12 -15,12 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+            <g transform="translate(255, 190) rotate(28)" filter="url(#shadow)">
+                <path d="M-18,0 C-22,-28 -8,-42 0,-45 C8,-42 22,-28 18,0 C15,12 -15,12 -18,0 Z" fill="url(#blueTulip)"/>
+            </g>
+
+            <polygon points="170,375 50,210 170,250 290,210" fill="url(#wrapFront)" filter="url(#shadow)"/>
+            <polygon points="170,375 80,230 170,260 260,230" fill="#f8fafc" opacity="0.8"/>
+
+            <path d="M140,290 Q170,298 200,290" stroke="#1e3a8a" stroke-width="8" stroke-linecap="round" fill="none"/>
+            <path d="M170,294 C148,278 138,300 168,296" fill="#2563eb" opacity="0.9"/>
+            <path d="M170,294 C192,278 202,300 172,296" fill="#2563eb" opacity="0.9"/>
+            <path d="M166,296 L150,330 M174,296 L190,330" stroke="#1d4ed8" stroke-width="4.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+
+    <button class="envelope-btn" onclick="openLetter()">
+        <span class="envelope-icon">💌</span>
+        <span class="envelope-text">Bấm để mở thư của em</span>
+    </button>
+</div>
+
+<!-- KHUNG ĐỌC THƯ -->
+<div class="letter-overlay" id="letterOverlay">
+    <div class="letter-paper">
+        <div class="letter-header">Gửi anh, nhân ngày 19/11 ❤️</div>
+        <div class="letter-content" id="typedText"></div>
+        <div class="next-step-box" id="nextStepBox">
+            <button class="next-btn" onclick="showHeartScreen()">Nhận điều bất ngờ tiếp theo ❤️ →</button>
+        </div>
+    </div>
+</div>
+
+<!-- MÀN HÌNH 2: TRÁI TIM CÁT HỒNG VỚI CHỮ "I love you" Ở GIỮA & 3 HÀNG CHỮ XOAY -->
+<div class="heart-screen" id="heartScreen">
+    <canvas id="galaxyCanvas"></canvas>
+</div>
+
+<script>
+    const message = `Dear love,
+
+Chúc anh ngày 19/11 thật vui vẻ và hạnh phúc. Mong anh luôn mạnh khoẻ, bình an, làm gì cũng thuận lợi.
+
+Dù cuộc sống có bận rộn đến đâu, anh cũng nhớ chăm sóc bản thân mình thật tốt, uống ít bia rượu, đi ngủ sớm, đừng ngồi làm việc liên tục quài nhe.
+
+Mong yêu của em luôn sống một cuộc đời an yên, và luôn được bao bọc bởi đầy hạnh phúc.
+
+Em của anh`;
+
+    let index = 0;
+    let typingTimer = null;
+    let isOpened = false;
+
+    /* QUẢN LÝ NHẠC NỀN */
+    const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicLabel = document.getElementById('musicLabel');
+    let isPlaying = false;
+
+    function playBackgroundMusic() {
+        bgMusic.volume = 0;
+        bgMusic.play().then(() => {
+            isPlaying = true;
+            musicToggle.classList.add('visible');
+            musicIcon.textContent = '🎵';
+            musicLabel.textContent = 'Đang phát';
+
+            // Hiệu ứng tăng dần âm lượng mượt mà (Fade-in)
+            let vol = 0;
+            const fadeAudio = setInterval(() => {
+                if (vol < 0.75) {
+                    vol = Math.min(vol + 0.05, 0.75);
+                    bgMusic.volume = vol;
+                } else {
+                    clearInterval(fadeAudio);
+                }
+            }, 150);
+        }).catch(err => {
+            console.log("Không tìm thấy file music.mp3 hoặc trình duyệt chặn phát:", err);
+        });
+    }
+
+    function toggleMusic() {
+        if (isPlaying) {
+            bgMusic.pause();
+            isPlaying = false;
+            musicIcon.textContent = '🔇';
+            musicLabel.textContent = 'Đã tắt';
+        } else {
+            bgMusic.play();
+            isPlaying = true;
+            musicIcon.textContent = '🎵';
+            musicLabel.textContent = 'Đang phát';
+        }
+    }
+
+    function openLetter() {
+        document.getElementById('letterOverlay').classList.add('active');
+        if (!isOpened) {
+            isOpened = true;
+            playBackgroundMusic(); // Bắt đầu phát nhạc ngay khi bấm mở thư
+            startTyping();
+        }
+    }
+
+    function startTyping() {
+        const textElement = document.getElementById('typedText');
+        const nextBox = document.getElementById('nextStepBox');
+        textElement.innerHTML = '<span class="cursor"></span>';
+        index = 0;
+
+        typingTimer = setInterval(() => {
+            if (index < message.length) {
+                const currentText = message.slice(0, index + 1);
+                textElement.innerHTML = currentText + '<span class="cursor"></span>';
+                index++;
+            } else {
+                clearInterval(typingTimer);
+                textElement.innerHTML = message;
+                setTimeout(() => {
+                    nextBox.classList.add('show');
+                }, 1000);
+            }
+        }, 80);
+    }
+
+    function showHeartScreen() {
+        document.getElementById('letterOverlay').classList.remove('active');
+        document.getElementById('mainContainer').style.opacity = '0';
+        musicToggle.classList.add('dark-mode'); // Chuyển giao diện nút nhạc sang tông tối cho hợp nền đêm
+        const heartScreen = document.getElementById('heartScreen');
+        heartScreen.classList.add('active');
+        initHeartAndGalaxy();
+    }
+
+    /* TRÁI TIM CÁT HỒNG ĐÀO + CHỮ "I love you" Ở GIỮA + 3 HÀNG CHỮ XOAY XUÔI CHIỀU */
+    function initHeartAndGalaxy() {
+        const canvas = document.getElementById('galaxyCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const ambientDots = [];
+        const ambientColors = [
+            '#ffffff', '#ffe4e6', '#fda4af', '#f472b6', '#fbcfe8', '#e2e8f0'
+        ];
+        for (let i = 0; i < 190; i++) {
+            ambientDots.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 1.9 + 0.5,
+                speedY: Math.random() * 0.25 + 0.05,
+                driftX: (Math.random() - 0.5) * 0.15,
+                color: ambientColors[Math.floor(Math.random() * ambientColors.length)],
+                phase: Math.random() * Math.PI * 2,
+                twinkleSpeed: Math.random() * 0.03 + 0.01,
+                baseAlpha: Math.random() * 0.55 + 0.2
+            });
+        }
+
+        const heartParticles = [];
+        const coralColors = [
+            '#ff758f', '#ff8fa3', '#ffb3c1', '#fb6f92',
+            '#f28482', '#f5cac3', '#e56b6f', '#ffccd5'
+        ];
+        const totalParticles = 7500;
+
+        function getHeartCoord(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3) * 1.15;
+            const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+            return { x, y };
+        }
+
+        for (let i = 0; i < totalParticles; i++) {
+            const t = Math.random() * Math.PI * 2;
+            const pos = getHeartCoord(t);
+
+            const rand = Math.random();
+            let spread, size, alphaBase;
+
+            if (rand < 0.45) {
+                spread = 0.94 + Math.pow(Math.random(), 0.5) * 0.07;
+                size = Math.random() * 0.9 + 0.5;
+                alphaBase = 0.85;
+            } else if (rand < 0.82) {
+                spread = 0.55 + Math.pow(Math.random(), 0.45) * 0.39;
+                size = Math.random() * 0.85 + 0.4;
+                alphaBase = ((spread - 0.5) / 0.45) * 0.65;
+            } else if (rand < 0.95) {
+                spread = 1.01 + Math.pow(Math.random(), 2.2) * 0.15;
+                size = Math.random() * 0.75 + 0.35;
+                alphaBase = 0.55;
+            } else {
+                spread = Math.random() * 0.55;
+                size = Math.random() * 0.7 + 0.3;
+                alphaBase = 0.14;
+            }
+
+            heartParticles.push({
+                baseX: pos.x * spread,
+                baseY: pos.y * spread,
+                x: (Math.random() - 0.5) * width,
+                y: (Math.random() - 0.5) * height,
+                vx: 0,
+                vy: 0,
+                size: size,
+                alphaBase: alphaBase,
+                color: coralColors[Math.floor(Math.random() * coralColors.length)],
+                phase: Math.random() * Math.PI * 2,
+                speed: Math.random() * 0.06 + 0.02
+            });
+        }
+
+        function burstHeart() {
+            heartParticles.forEach(p => {
+                const angle = Math.random() * Math.PI * 2;
+                const force = Math.random() * 16 + 5;
+                p.vx += Math.cos(angle) * force;
+                p.vy += Math.sin(angle) * force;
+            });
+        }
+        canvas.addEventListener('click', burstHeart);
+        canvas.addEventListener('touchstart', burstHeart);
+
+        const ring1Phrases = [
+            { text: "Cảm ơn anh", heart: "❤️" },
+            { text: "Mừng quốc tế đàn ông", heart: "💙" },
+            { text: "19/11/2026", heart: "💛" }
+        ];
+
+        const ring2Phrases = [
+            { text: "Luôn hạnh phúc vui vẻ", heart: "💜" },
+            { text: "Mãi bình an nha anh", heart: "💖" },
+            { text: "Em của anh", heart: "💚" }
+        ];
+
+        const ring3Phrases = [
+            { text: "Thương anh thật nhiều", heart: "🧡" },
+            { text: "Chúc anh luôn rạng rỡ", heart: "🤍" },
+            { text: "Yêu anh", heart: "❤️" }
+        ];
+
+        function buildOrbitItems(phrases, radiusX, radiusZ, yOffset, speed) {
+            const flatChars = [];
+            phrases.forEach(p => {
+                p.text.split("").forEach(ch => flatChars.push({ val: ch, isHeart: false }));
+                flatChars.push({ val: " ", isHeart: false });
+                flatChars.push({ val: p.heart, isHeart: true });
+                "       ".split("").forEach(sp => flatChars.push({ val: sp, isHeart: false }));
+            });
+
+            const total = flatChars.length;
+            const items = flatChars.map((fc, i) => ({
+                val: fc.val,
+                isHeart: fc.isHeart,
+                angle: -(i / total) * Math.PI * 2
+            }));
+
+            return { radiusX, radiusZ, yOffset, speed, items };
+        }
+
+        const orbits = [
+            buildOrbitItems(ring1Phrases, 210, 38, 0, -0.0085),
+            buildOrbitItems(ring2Phrases, 285, 48, 44, 0.0072),
+            buildOrbitItems(ring3Phrases, 360, 58, 88, -0.0062)
+        ];
+
+        let time = 0;
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            ambientDots.forEach(dot => {
+                dot.y += dot.speedY;
+                dot.x += dot.driftX;
+                dot.phase += dot.twinkleSpeed;
+
+                if (dot.y > height + 10) {
+                    dot.y = -10;
+                    dot.x = Math.random() * width;
+                }
+                if (dot.x < -10) dot.x = width + 10;
+                if (dot.x > width + 10) dot.x = -10;
+
+                const alpha = dot.baseAlpha * (0.65 + (Math.sin(dot.phase) + 1) * 0.25);
+                ctx.globalAlpha = Math.min(alpha, 1);
+                ctx.fillStyle = dot.color;
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            time += 0.05;
+            const beat = Math.pow(Math.sin(time), 4) * 0.09 + Math.pow(Math.sin(time - 0.4), 6) * 0.045;
+            const baseScale = Math.min(width, height) / 48;
+            const heartScale = baseScale * (1 + beat);
+            const heartCenterX = width / 2;
+            const heartCenterY = height * 0.31;
+
+            heartParticles.forEach(p => {
+                const targetX = p.baseX * heartScale;
+                const targetY = p.baseY * heartScale;
+
+                p.vx = (p.vx + (targetX - p.x) * 0.09) * 0.82;
+                p.vy = (p.vy + (targetY - p.y) * 0.09) * 0.82;
+                p.x += p.vx;
+                p.y += p.vy;
+
+                p.phase += p.speed;
+                const alpha = p.alphaBase * (0.7 + (Math.sin(p.phase) + 1) * 0.18);
+
+                ctx.globalAlpha = Math.min(alpha, 1);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(heartCenterX + p.x, heartCenterY + p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            ctx.save();
+            const textScale = 1 + beat * 0.65;
+            const fontSize = Math.max(18, Math.min(baseScale * 1.9, 32));
+            ctx.translate(heartCenterX, heartCenterY + baseScale * 1.5);
+            ctx.scale(textScale, textScale);
+            ctx.font = `italic 600 ${fontSize}px 'Georgia', 'Times New Roman', serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "#ffe4e6";
+            ctx.shadowColor = "#ff4d6d";
+            ctx.shadowBlur = 16;
+            ctx.fillText("I love you", 0, 0);
+            ctx.restore();
+
+            const tailBottomY = heartCenterY + (16 * baseScale) + 65;
+            const responsiveScale = Math.min(width / 740, 1.05);
+
+            const renderQueue = [];
+
+            orbits.forEach(orbit => {
+                orbit.items.forEach(item => {
+                    item.angle += orbit.speed;
+                    const rx = orbit.radiusX * responsiveScale;
+                    const rz = orbit.radiusZ * responsiveScale;
+
+                    const x3d = Math.cos(item.angle) * rx;
+                    const z3d = Math.sin(item.angle) * rz;
+
+                    const depth = (z3d + rz) / (2 * rz);
+                    const isFront = z3d >= 0;
+                    const scale = 0.65 + depth * 0.55;
+                    const alpha = isFront ? (0.55 + depth * 0.45) : (0.08 + depth * 0.15);
+
+                    renderQueue.push({
+                        val: item.val,
+                        isHeart: item.isHeart,
+                        isFront: isFront,
+                        x: heartCenterX + x3d,
+                        y: tailBottomY + (orbit.yOffset * responsiveScale) + z3d * 0.55,
+                        z: z3d,
+                        scale: scale,
+                        alpha: alpha
+                    });
+                });
+            });
+
+            renderQueue.sort((a, b) => a.z - b.z);
+
+            renderQueue.forEach(item => {
+                if (item.val === " ") return;
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.scale(item.scale, item.scale);
+                ctx.globalAlpha = item.alpha;
+
+                if (item.isHeart) {
+                    ctx.font = "16px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif";
+                    ctx.fillText(item.val, -8, 6);
+                } else {
+                    ctx.font = "600 14.5px 'Segoe UI', sans-serif";
+                    ctx.fillStyle = "#ffffff";
+                    if (item.isFront) {
+                        ctx.shadowColor = "#ff758f";
+                        ctx.shadowBlur = 10;
+                    }
+                    ctx.fillText(item.val, -5, 5);
+                }
+                ctx.restore();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    }
+</script>
+
+</body>
+</html>
